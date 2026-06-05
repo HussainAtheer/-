@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Media Checker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            overflow-x: hidden;
+        }
+        .particles {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none; z-index: 0;
+        }
+        .particle {
+            position: absolute;
+            width: 4px; height: 4px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+            animation: float 15s infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) translateX(50px); opacity: 0; }
+        }
+        .container {
+            position: relative; z-index: 1;
+            width: 100%; max-width: 520px;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 24px;
+            padding: 40px 30px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.4);
+            animation: slideUp 0.8s ease-out;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .logo { text-align: center; margin-bottom: 30px; }
+        .logo-icon {
+            width: 80px; height: 80px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 20px;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 36px;
+            box-shadow: 0 10px 30px rgba(102,126,234,0.4);
+        }
+        .logo h1 {
+            font-size: 28px; font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2, #f093fb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .logo p { color: rgba(255,255,255,0.5); font-size: 13px; margin-top: 5px; }
+
+        .platform-select {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+        .platform-btn {
+            padding: 16px;
+            background: rgba(255,255,255,0.05);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            color: rgba(255,255,255,0.7);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-family: 'Cairo', sans-serif;
+            font-size: 14px; font-weight: 700;
+        }
+        .platform-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+        .platform-btn.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-color: transparent; color: #fff;
+            box-shadow: 0 10px 30px rgba(102,126,234,0.4);
+        }
+        .platform-btn.fb.active {
+            background: linear-gradient(135deg, #1877f2, #0d5cb6);
+            box-shadow: 0 10px 30px rgba(24,119,242,0.4);
+        }
+        .platform-btn.ig.active {
+            background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+            box-shadow: 0 10px 30px rgba(225,48,108,0.4);
+        }
+        .platform-btn .icon { font-size: 28px; display: block; margin-bottom: 6px; }
+
+        .input-group { margin-bottom: 20px; position: relative; }
+        .input-group label {
+            display: block; color: rgba(255,255,255,0.7);
+            font-size: 13px; margin-bottom: 8px; font-weight: 700;
+        }
+        .input-group input, .input-group textarea {
+            width: 100%; padding: 14px 18px;
+            background: rgba(255,255,255,0.07);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 14px; color: #fff;
+            font-family: 'Cairo', sans-serif;
+            font-size: 14px;
+            transition: all 0.3s ease; outline: none;
+        }
+        .input-group input:focus, .input-group textarea:focus {
+            border-color: #667eea;
+            background: rgba(255,255,255,0.1);
+            box-shadow: 0 0 20px rgba(102,126,234,0.2);
+        }
+        .input-group input::placeholder { color: rgba(255,255,255,0.3); }
+
+        .telegram-config {
+            background: rgba(0,136,204,0.1);
+            border: 1px solid rgba(0,136,204,0.2);
+            border-radius: 14px;
+            padding: 20px; margin-bottom: 20px;
+        }
+        .telegram-config h3 {
+            color: #0088cc; font-size: 14px;
+            margin-bottom: 15px;
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        .mode-select {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px; margin-bottom: 25px;
+        }
+        .mode-btn {
+            padding: 16px;
+            background: rgba(255,255,255,0.05);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 16px; color: rgba(255,255,255,0.7);
+            cursor: pointer; transition: all 0.3s ease;
+            text-align: center;
+            font-family: 'Cairo', sans-serif;
+            font-size: 14px; font-weight: 700;
+        }
+        .mode-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+        .mode-btn.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-color: transparent; color: #fff;
+            box-shadow: 0 10px 30px rgba(102,126,234,0.4);
+        }
+        .mode-btn .icon { font-size: 24px; display: block; margin-bottom: 6px; }
+
+        .btn {
+            width: 100%; padding: 16px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none; border-radius: 14px;
+            color: #fff;
+            font-family: 'Cairo', sans-serif;
+            font-size: 16px; font-weight: 700;
+            cursor: pointer; transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(102,126,234,0.3);
+            position: relative; overflow: hidden;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 15px 40px rgba(102,126,234,0.5); }
+        .btn:active { transform: translateY(0); }
+        .btn .ripple {
+            position: absolute; border-radius: 50%;
+            background: rgba(255,255,255,0.4);
+            transform: scale(0);
+            animation: ripple 0.6s ease-out;
+            pointer-events: none;
+        }
+        @keyframes ripple { to { transform: scale(4); opacity: 0; } }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px; margin-bottom: 25px;
+        }
+        .stat-box {
+            background: rgba(255,255,255,0.05);
+            border-radius: 14px;
+            padding: 15px 10px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .stat-box .num { font-size: 24px; font-weight: 700; color: #667eea; }
+        .stat-box .label { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 4px; }
+
+        .results {
+            margin-top: 25px; max-height: 300px;
+            overflow-y: auto; border-radius: 14px;
+            background: rgba(0,0,0,0.2);
+            padding: 15px; display: none;
+        }
+        .results.show { display: block; }
+        .result-item {
+            padding: 12px 16px; border-radius: 10px;
+            margin-bottom: 8px; font-size: 13px;
+            display: flex; align-items: center;
+            gap: 10px;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .result-item.hitt {
+            background: rgba(46, 204, 113, 0.15);
+            border: 1px solid rgba(46, 204, 113, 0.3);
+            color: #2ecc71;
+        }
+        .result-item.secure {
+            background: rgba(241, 196, 15, 0.15);
+            border: 1px solid rgba(241, 196, 15, 0.3);
+            color: #f1c40f;
+        }
+        .result-item.bad {
+            background: rgba(231, 76, 60, 0.15);
+            border: 1px solid rgba(231, 76, 60, 0.3);
+            color: #e74c3c;
+        }
+        .result-item .platform-tag {
+            font-size: 10px; padding: 2px 8px;
+            border-radius: 6px; font-weight: 700;
+            margin-left: auto;
+        }
+        .result-item.hitt .platform-tag { background: rgba(46,204,113,0.3); }
+        .result-item.secure .platform-tag { background: rgba(241,196,15,0.3); }
+        .result-item.bad .platform-tag { background: rgba(231,76,60,0.3); }
+
+        .hidden { display: none !important; }
+        .footer {
+            text-align: center; margin-top: 20px;
+            color: rgba(255,255,255,0.3); font-size: 12px;
+        }
+        .footer a { color: #667eea; text-decoration: none; }
+        .results::-webkit-scrollbar { width: 6px; }
+        .results::-webkit-scrollbar-track { background: transparent; }
+        .results::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+
+    <div class="container">
+        <div class="card">
+            <div class="logo">
+                <div class="logo-icon">🔒</div>
+                <h1>Social Media Checker</h1>
+                <p>Facebook & Instagram | Channel : @tools_vip</p>
+            </div>
+
+            <div class="platform-select">
+                <div class="platform-btn fb active" data-platform="facebook" onclick="selectPlatform(this)">
+                    <span class="icon">📘</span>
+                    Facebook
+                </div>
+                <div class="platform-btn ig" data-platform="instagram" onclick="selectPlatform(this)">
+                    <span class="icon">📷</span>
+                    Instagram
+                </div>
+            </div>
+
+            <div class="telegram-config">
+                <h3>📡 إعدادات Telegram</h3>
+                <div class="input-group">
+                    <label>ID Telegram :</label>
+                    <input type="text" id="adminId" placeholder="أدخل ID Telegram">
+                </div>
+                <div class="input-group">
+                    <label>Token Bot :</label>
+                    <input type="text" id="botToken" placeholder="أدخل Token البوت">
+                </div>
+            </div>
+
+            <div class="stats">
+                <div class="stat-box">
+                    <div class="num" id="statHitt">0</div>
+                    <div class="label">Hitt</div>
+                </div>
+                <div class="stat-box">
+                    <div class="num" id="statSecure">0</div>
+                    <div class="label">Secure</div>
+                </div>
+                <div class="stat-box">
+                    <div class="num" id="statBad">0</div>
+                    <div class="label">Bad</div>
+                </div>
+            </div>
+
+            <div class="mode-select">
+                <div class="mode-btn active" data-mode="combo" onclick="selectMode(this)">
+                    <span class="icon">📁</span>
+                    Combo List
+                </div>
+                <div class="mode-btn" data-mode="random" onclick="selectMode(this)">
+                    <span class="icon">🎲</span>
+                    Random Gen
+                </div>
+            </div>
+
+            <div id="comboSection">
+                <div class="input-group">
+                    <label>Combo List (email:pass كل سطر) :</label>
+                    <textarea id="comboList" rows="8" placeholder="example@gmail.com:password123&#10;user@yahoo.com:pass456&#10;test@hotmail.com:123456"></textarea>
+                </div>
+            </div>
+
+            <div id="randomSection" class="hidden">
+                <div class="input-group">
+                    <label>عدد المحاولات :</label>
+                    <input type="number" id="attemptCount" value="100" min="1" max="10000">
+                </div>
+                <div class="input-group">
+                    <label>بادئة الرقم (مثال: +964750) :</label>
+                    <input type="text" id="numPrefix" value="+964750">
+                </div>
+            </div>
+
+            <button class="btn" id="startBtn" onclick="startCheck()">🚀 بدء الفحص</button>
+
+            <div class="results" id="results"></div>
+        </div>
+
+        <div class="footer">
+            <p>BY <a href="#">@Gwrga_krak1</a> | Channel : @tools_vip</p>
+        </div>
+    </div>
+
+    <script>
+        const particles = document.getElementById('particles');
+        for(let i=0; i<30; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left = Math.random() * 100 + '%';
+            p.style.top = Math.random() * 100 + '%';
+            p.style.animationDelay = Math.random() * 15 + 's';
+            p.style.animationDuration = (10 + Math.random() * 10) + 's';
+            particles.appendChild(p);
+        }
+
+        let currentMode = 'combo';
+        let currentPlatform = 'facebook';
+        let hittCount = 0, secureCount = 0, badCount = 0;
+        let isRunning = false;
+
+        function selectPlatform(el) {
+            document.querySelectorAll('.platform-btn').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+            currentPlatform = el.dataset.platform;
+        }
+
+        function selectMode(el) {
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+            currentMode = el.dataset.mode;
+            document.getElementById('comboSection').classList.toggle('hidden', currentMode !== 'combo');
+            document.getElementById('randomSection').classList.toggle('hidden', currentMode !== 'random');
+        }
+
+        function addResult(type, email, password) {
+            const results = document.getElementById('results');
+            results.classList.add('show');
+            const item = document.createElement('div');
+            item.className = `result-item ${type}`;
+            const icons = { hitt: '✅', secure: '⚠️', bad: '❌' };
+            const labels = { hitt: 'HITT', secure: 'SECURE', bad: 'BAD' };
+            const platformName = currentPlatform === 'facebook' ? 'FB' : 'IG';
+            item.innerHTML = `<span>${icons[type]}</span><div><strong>${labels[type]}</strong><br>${email}:${password}</div><span class="platform-tag">${platformName}</span>`;
+            results.insertBefore(item, results.firstChild);
+
+            if(type === 'hitt') hittCount++;
+            else if(type === 'secure') secureCount++;
+            else badCount++;
+
+            document.getElementById('statHitt').textContent = hittCount;
+            document.getElementById('statSecure').textContent = secureCount;
+            document.getElementById('statBad').textContent = badCount;
+        }
+
+        function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+        function randomNum(length) {
+            let r = '';
+            for(let i=0; i<length; i++) r += Math.floor(Math.random() * 10);
+            return r;
+        }
+
+        async function simulateCheck(email, password) {
+            await sleep(300 + Math.random() * 700);
+            const rand = Math.random();
+            if(rand < 0.05) return 'hitt';
+            else if(rand < 0.15) return 'secure';
+            return 'bad';
+        }
+
+        async function startCheck() {
+            if(isRunning) return;
+            isRunning = true;
+            const btn = document.getElementById('startBtn');
+            btn.textContent = '⏳ جاري الفحص...';
+            btn.style.opacity = '0.7';
+
+            if(currentMode === 'combo') {
+                const lines = document.getElementById('comboList').value.trim().split('\n').filter(l => l.includes(':'));
+                for(const line of lines) {
+                    if(!isRunning) break;
+                    const [email, password] = line.split(':');
+                    const result = await simulateCheck(email.trim(), password.trim());
+                    addResult(result, email.trim(), password.trim());
+                }
+            } else {
+                const count = parseInt(document.getElementById('attemptCount').value) || 100;
+                const prefix = document.getElementById('numPrefix').value || '+964750';
+                for(let i=0; i<count; i++) {
+                    if(!isRunning) break;
+                    const num = randomNum(7);
+                    const email = prefix + num;
+                    const password = prefix.replace('+', '') + num;
+                    const result = await simulateCheck(email, password);
+                    addResult(result, email, password);
+                }
+            }
+
+            btn.textContent = '🚀 بدء الفحص';
+            btn.style.opacity = '1';
+            isRunning = false;
+        }
+
+        document.querySelectorAll('.btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                const ripple = document.createElement('span');
+                ripple.className = 'ripple';
+                const rect = this.getBoundingClientRect();
+                ripple.style.left = (e.clientX - rect.left) + 'px';
+                ripple.style.top = (e.clientY - rect.top) + 'px';
+                this.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 600);
+            });
+        });
+    </script>
+</body>
+</html>
